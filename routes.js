@@ -20,58 +20,37 @@ const Routes = function () {
 		routes[name].rotations = [...routes[name].rotations, rotation];
 	};
 
-	const moveTowards = ({object, target, speed = 1}) => {
-		const targetNormalizedVector = new THREE.Vector3(0,0,0);
-		const accuracy = speed;
+	const modifyPropertyOverTime = property => {
+		return ({object, target, speed = 1}) => {
+			if (
+				object[property].x >= target.x - speed &&
+				object[property].x <= target.x + speed &&
+				object[property].y >= target.y - speed &&
+				object[property].y <= target.y + speed &&
+				object[property].z >= target.z - speed &&
+				object[property].z <= target.z + speed
+			) {
+				return true;
+			}
 
-		targetNormalizedVector.x = target.x - object.position.x;
-		targetNormalizedVector.y = target.y - object.position.y;
-		targetNormalizedVector.z = target.z - object.position.z;
-		targetNormalizedVector.normalize();
+			const targetNormalizedVector = new THREE.Vector3(0,0,0);
 
-		object.position.x += targetNormalizedVector.x * speed;
-		object.position.y += targetNormalizedVector.y * speed;
-		object.position.z += targetNormalizedVector.z * speed;
+			targetNormalizedVector.x = target.x - object[property].x;
+			targetNormalizedVector.y = target.y - object[property].y;
+			targetNormalizedVector.z = target.z - object[property].z;
+			targetNormalizedVector.normalize();
 
-		if (
-			object.position.x >= target.x - accuracy &&
-			object.position.x <= target.x + accuracy &&
-			object.position.y >= target.y - accuracy &&
-			object.position.y <= target.y + accuracy &&
-			object.position.z >= target.z - accuracy &&
-			object.position.z <= target.z + accuracy
-		) {
-			return true;
-		}
+			object[property].x += targetNormalizedVector.x * speed;
+			object[property].y += targetNormalizedVector.y * speed;
+			object[property].z += targetNormalizedVector.z * speed;
 
-		return false;
-	};
+			return false;
+		};
+	}
 
-	const rotateTowards = ({object, target, speed = 1}) => {
-		const accuracy = speed;
+	const moveTowards = modifyPropertyOverTime("position");
 
-		if (
-			object.rotation.x >= target.x - accuracy &&
-			object.rotation.x <= target.x + accuracy &&
-			object.rotation.y >= target.y - accuracy &&
-			object.rotation.y <= target.y + accuracy &&
-			object.rotation.z >= target.z - accuracy &&
-			object.rotation.z <= target.z + accuracy
-		) {
-			return;
-		}
-
-		const targetNormalizedVector = new THREE.Vector3(0,0,0);
-
-		targetNormalizedVector.x = target.x - object.rotation.x;
-		targetNormalizedVector.y = target.y - object.rotation.y;
-		targetNormalizedVector.z = target.z - object.rotation.z;
-		targetNormalizedVector.normalize();
-
-		object.rotation.x += targetNormalizedVector.x * speed;
-		object.rotation.y += targetNormalizedVector.y * speed;
-		object.rotation.z += targetNormalizedVector.z * speed;
-	};
+	const rotateTowards = modifyPropertyOverTime("rotation");
 
 	const followRoute = (name, delta) => {
 		if (!camera) {
