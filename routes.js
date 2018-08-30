@@ -20,8 +20,31 @@ const Routes = function () {
 		routes[name].rotations = [...routes[name].rotations, rotation];
 	};
 
-	const moveTowards = () => {
+	const moveTowards = ({object, target, speed = 1}) => {
+		const targetNormalizedVector = new THREE.Vector3(0,0,0);
+		const accuracy = speed;
 
+		targetNormalizedVector.x = target.x - object.position.x;
+		targetNormalizedVector.y = target.y - object.position.y;
+		targetNormalizedVector.z = target.z - object.position.z;
+		targetNormalizedVector.normalize();
+
+		object.position.x += targetNormalizedVector.x * speed;
+		object.position.y += targetNormalizedVector.y * speed;
+		object.position.z += targetNormalizedVector.z * speed;
+
+		if (
+			object.position.x >= target.x - accuracy &&
+			object.position.x <= target.x + accuracy &&
+			object.position.y >= target.y - accuracy &&
+			object.position.y <= target.y + accuracy &&
+			object.position.z >= target.z - accuracy &&
+			object.position.z <= target.z + accuracy
+		) {
+			return true;
+		}
+
+		return false;
 	}
 
 	const followRoute = (name, delta) => {
@@ -34,8 +57,11 @@ const Routes = function () {
 		}
 
 		const point = routes[name].points[currentPoint];
-		//camera.position.set((camera.position.x + point.x) * delta / 1000, point.y, point.z);
-		camera.position.lerp(point, delta * 1)
+		const thereYet = moveTowards({object: camera, target: point, speed: 20 * delta});
+
+		if (thereYet) {
+			currentPoint++;
+		}
 	};
 
 	const setCamera = (newCamera) => {
