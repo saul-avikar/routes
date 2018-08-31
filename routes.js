@@ -46,7 +46,7 @@ const Routes = function () {
 
 			return false;
 		};
-	}
+	};
 
 	const moveTowards = modifyPropertyOverTime("position");
 
@@ -64,21 +64,32 @@ const Routes = function () {
 		const point = routes[name].points[currentPoint];
 		const rotation = routes[name].rotations[currentPoint];
 
-		const thereYet = moveTowards({object: camera, target: point, speed: 20 * delta});
+		const thereYet = moveTowards({object: camera, target: point, speed: 40 * delta});
 		const rotatedYet = rotateTowards({object: camera, target: rotation, speed: 1 * delta});
 
-		if (thereYet) {
+		if (thereYet && rotatedYet) {
 			currentPoint++;
 		}
+
+		if (!routes[name].points[currentPoint]) {
+			return true;
+		}
+
+		return false;
 	};
 
 	const setCamera = (newCamera) => {
 		camera = newCamera;
-	}
+	};
+
+	const getRoutes = () => {
+		return routes;
+	};
 
 	return {
 		addToRoute,
 		followRoute,
-		setCamera
+		setCamera,
+		getRoutes
 	};
 };
